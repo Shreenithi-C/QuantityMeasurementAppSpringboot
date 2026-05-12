@@ -23,7 +23,7 @@ Supports:
 * Java 17
 * Spring Boot
 * Spring Data JPA
-* H2 Database
+* mySQL Database
 * Swagger (API Testing)
 * Mockito (Unit Testing)
 
@@ -36,8 +36,6 @@ Supports:
 ✔ Arithmetic operations (+, -, *, /)
 ✔ Store history of operations
 ✔ Global Exception Handling
-✔ Logging with SLF4J
-✔ Swagger UI for testing
 
 ---
 
@@ -85,23 +83,13 @@ Supports:
 
 ##  Database
 
-Uses H2 in-memory database.
+Uses mySQL
 
 Tables:
 
 * Units
 * Conversions
 * History
-
----
-
-##  Swagger UI
-
-Access API documentation at:
-
-```
-http://localhost:8080/swagger-ui/index.html
-```
 
 ---
 

@@ -1,4 +1,5 @@
 pipeline {
+
     agent any
 
     environment {
@@ -6,6 +7,10 @@ pipeline {
         AWS_REGION = "us-east-2"
         IMAGE_REPO_NAME = "quantity-app"
         IMAGE_TAG = "latest"
+
+        ECR_REPO = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_REPO_NAME}:${IMAGE_TAG}"
+
+        DOCKER_SERVER = "172.31.xx.xx"
     }
 
     stages {
@@ -25,6 +30,7 @@ pipeline {
 
         stage('Login to ECR') {
             steps {
+
                 withCredentials([[
                     $class: 'AmazonWebServicesCredentialsBinding',
                     credentialsId: 'aws-ecr-creds'
@@ -41,19 +47,41 @@ pipeline {
 
         stage('Tag Docker Image') {
             steps {
+
                 sh '''
-                docker tag quantity-app:latest \
-                $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
+                docker tag quantity-app:latest $ECR_REPO
                 '''
             }
         }
 
         stage('Push Docker Image to ECR') {
             steps {
+
                 sh '''
-                docker push \
-                $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
+                docker push $ECR_REPO
                 '''
+            }
+        }
+
+        stage('Deploy To Docker Server') {
+
+            steps {
+
+                sh """
+                ssh ubuntu@$DOCKER_SERVER '
+
+                docker stop quantity-container || true
+
+                docker rm quantity-container || true
+
+                docker pull $ECR_REPO
+
+                docker run -d \
+                --name quantity-container \
+                -p 8080:8080 \
+                $ECR_REPO
+                '
+                """
             }
         }
     }
